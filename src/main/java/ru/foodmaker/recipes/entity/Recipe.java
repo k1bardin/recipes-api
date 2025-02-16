@@ -1,0 +1,50 @@
+package ru.foodmaker.recipes.entity;
+import lombok.Data;
+
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import java.util.List;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Column;
+@Entity
+@Data
+@Table(name="recipes")
+public class Recipe {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name="recipe_id")
+    private Integer recipeId;
+
+    @Column(name="recipe_title")
+    private String recipeTitle;
+
+    @Column(name="recipe_country")
+    private String recipeCountry;
+
+    @Column(name="recipe_holiday")
+    private String recipeHoliday;
+
+    @Column(name="progress")
+    private String progress;
+
+    @Column(name="type_meal")
+    private String typeMeal;
+
+    @Column(name="time")
+    private String time;
+
+    @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RecipeIngredients> ingredients;
+
+    @Column(name="image_link")
+    private String imageLink;
+
+    @Column(name="author_id")
+    private Integer authorId;
+
+}
