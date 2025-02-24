@@ -38,8 +38,14 @@ public class Recipe {
     @Column(name="time")
     private String time;
 
-    @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL)
     private List<RecipeIngredients> ingredients;
+
+    @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL)
+    private List<RecipeCategories> categories;
+
+    @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL)
+    private List<PreparationSteps> steps;
 
     @Column(name="image_link")
     private String imageLink;

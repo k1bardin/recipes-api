@@ -1,7 +1,6 @@
 package ru.foodmaker.recipes.dto;
 
 import lombok.Data;
-import ru.foodmaker.recipes.entity.Ingredient;
 
 import java.util.List;
 
@@ -26,5 +25,9 @@ public class RecipeDto {
 
     private Integer authorId;
 
+    private List<RecipeCategoriesDto> categories;
+
     private List<RecipeIngredientsDto> ingredients;
+
+    private List<PreparationStepsDto> steps;
 }

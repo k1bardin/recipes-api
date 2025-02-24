@@ -1,11 +1,7 @@
 package ru.foodmaker.recipes.mapper;
 import org.mapstruct.Mapper;
-import ru.foodmaker.recipes.dto.RecipeDto;
-import ru.foodmaker.recipes.dto.IngredientDto;
-import ru.foodmaker.recipes.dto.RecipeIngredientsDto;
-import ru.foodmaker.recipes.entity.Recipe;
-import ru.foodmaker.recipes.entity.Ingredient;
-import ru.foodmaker.recipes.entity.RecipeIngredients;
+import ru.foodmaker.recipes.dto.*;
+import ru.foodmaker.recipes.entity.*;
 
 @Mapper
 public interface RecipeMapper {
@@ -21,6 +17,14 @@ public interface RecipeMapper {
     RecipeIngredients toRecipeIngredients (RecipeIngredientsDto recipeIngredientsDto);
 
     RecipeIngredientsDto toRecipeIngredientsDto (RecipeIngredients recipeIngredients);
+
+    PreparationSteps toPreparationSteps (PreparationStepsDto preparationStepsDto);
+
+    PreparationStepsDto toPreparationStepsDto (PreparationSteps preparationSteps);
+
+    Category toCategory (CategoryDto categoryDto);
+
+    CategoryDto toCategoryDto (Category category);
 
 
 }

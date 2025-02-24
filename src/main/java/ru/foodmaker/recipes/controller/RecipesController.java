@@ -35,7 +35,7 @@ public class RecipesController {
         return this.recipesService.createRecipe(recipe);
     }
 
-    @DeleteMapping(path = "/recipe", produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(path = "/recipe/{recipeId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public void deleteRecipe(@PathVariable(name = "recipeId") Integer recipeId) {
 
         this.recipesService.deleteRecipe(recipeId);

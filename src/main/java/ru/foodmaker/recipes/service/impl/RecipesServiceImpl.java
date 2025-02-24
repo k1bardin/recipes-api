@@ -3,12 +3,11 @@ package ru.foodmaker.recipes.service.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import ru.foodmaker.recipes.dto.PreparationStepsDto;
 import ru.foodmaker.recipes.dto.RecipeDto;
 import ru.foodmaker.recipes.dto.RecipeIngredientsDto;
-import ru.foodmaker.recipes.entity.Ingredient;
+import ru.foodmaker.recipes.entity.PreparationSteps;
 import ru.foodmaker.recipes.entity.RecipeIngredients;
-import ru.foodmaker.recipes.repository.IngredientsRepository;
-import ru.foodmaker.recipes.repository.RecipeIngredientsRepository;
 import ru.foodmaker.recipes.repository.RecipesRepository;
 import ru.foodmaker.recipes.entity.Recipe;
 import ru.foodmaker.recipes.exception.EntityException;
@@ -19,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import ru.foodmaker.recipes.mapper.RecipeMapper;
 import ru.foodmaker.recipes.service.RecipesService;
@@ -28,19 +28,16 @@ public class RecipesServiceImpl implements RecipesService {
 
     private final RecipesRepository recipesRepository;
     private final RecipeMapper mapper;
-    private final IngredientsRepository ingredientsRepository;
-    private final RecipeIngredientsRepository recipeIngredientsRepository;
+
 
     @Autowired
     public RecipesServiceImpl(RecipesRepository recipesRepository,
-                              RecipeMapper mapper,
-                              IngredientsRepository ingredientsRepository,
-                              RecipeIngredientsRepository recipeIngredientsRepository) {
+                              RecipeMapper mapper
+                              ) {
 
         this.recipesRepository = recipesRepository;
         this.mapper = mapper;
-        this.ingredientsRepository = ingredientsRepository;
-        this.recipeIngredientsRepository = recipeIngredientsRepository;
+
     }
 
     @Override
@@ -51,6 +48,7 @@ public class RecipesServiceImpl implements RecipesService {
 
         Recipe recipe = this.mapper.toRecipe(recipeDto);
         Recipe newRecipe = this.recipesRepository.save(recipe);
+
         List<RecipeIngredients> ingredientList = new ArrayList<>();
         for (RecipeIngredientsDto recipeIngredientsDto : recipeDto.getIngredients()) {
             RecipeIngredients ingredient = new RecipeIngredients();
@@ -60,6 +58,17 @@ public class RecipesServiceImpl implements RecipesService {
             ingredientList.add(ingredient);
         }
         newRecipe.setIngredients(ingredientList);
+
+        List<PreparationSteps> preparationStepsList = new ArrayList<>();
+        for (PreparationStepsDto preparationStepsDto : recipeDto.getSteps()) {
+            PreparationSteps preparationSteps = new PreparationSteps();
+            preparationSteps.setRecipeId(newRecipe.getRecipeId());
+            preparationSteps.setStepNumber(preparationStepsDto.getStepNumber());
+            preparationSteps.setStepDescription(preparationStepsDto.getStepDescription());
+            preparationStepsList.add(preparationSteps);
+        }
+        newRecipe.setSteps(preparationStepsList);
+
         Recipe savedRecipe=this.recipesRepository.save(recipe);
         newRecipeDto = this.mapper.toRecipeDto(savedRecipe);
 
@@ -94,7 +103,7 @@ public class RecipesServiceImpl implements RecipesService {
     @Transactional
     public RecipeDto updateRecipe(RecipeDto recipeDto) {
 
-        Recipe recipe = this.recipesRepository.findById(recipeDto.getRecipeId()).orElseThrow(() -> new EntityException(String.format("Recipe with code %s not exists", recipeDto.getRecipeId())));
+       Recipe recipe = this.recipesRepository.findById(recipeDto.getRecipeId()).orElseThrow(() -> new EntityException(String.format("Recipe with code %s not exists", recipeDto.getRecipeId())));
         recipe.setRecipeTitle(recipeDto.getRecipeTitle());
         recipe.setRecipeCountry(recipeDto.getRecipeCountry());
         recipe.setRecipeHoliday(recipeDto.getRecipeHoliday());
@@ -104,6 +113,18 @@ public class RecipesServiceImpl implements RecipesService {
         recipe.setTime(recipeDto.getTime());
         recipe.setImageLink(recipeDto.getImageLink());
 
+        List<RecipeIngredients> updatedIngredients = recipeDto.getIngredients().stream()
+                .map(ingredientDto -> {
+                    RecipeIngredients recipeIngredients = new RecipeIngredients();
+                    recipeIngredients.setRecipeId(recipe.getRecipeId());
+                    recipeIngredients.setQuantity(ingredientDto.getQuantity());
+                    recipeIngredients.setIngredientId(ingredientDto.getIngredientId());
+
+                    return recipeIngredients;
+                })
+                .collect(Collectors.toList());
+
+        recipe.setIngredients(updatedIngredients);
         Recipe newRecipe = this.recipesRepository.save(recipe);
 
         return this.mapper.toRecipeDto(newRecipe);

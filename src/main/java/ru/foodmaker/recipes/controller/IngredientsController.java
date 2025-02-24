@@ -37,7 +37,7 @@ public class IngredientsController {
         return this.ingredientService.updateIngredient(ingredientDto);
     }
 
-    @DeleteMapping(path = "/ingredient", produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(path = "/ingredient/{ingredientId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public void deleteIngredient(@PathVariable(name = "ingredientId") Integer ingredientId) {
 
         this.ingredientService.deleteIngredient(ingredientId);
