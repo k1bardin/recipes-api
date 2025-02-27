@@ -4,11 +4,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import ru.foodmaker.recipes.dto.PreparationStepsDto;
+import ru.foodmaker.recipes.dto.RecipeCategoriesDto;
 import ru.foodmaker.recipes.dto.RecipeDto;
 import ru.foodmaker.recipes.dto.RecipeIngredientsDto;
 import ru.foodmaker.recipes.entity.PreparationSteps;
+import ru.foodmaker.recipes.entity.RecipeCategories;
 import ru.foodmaker.recipes.entity.RecipeIngredients;
 import ru.foodmaker.recipes.repository.RecipesRepository;
+import ru.foodmaker.recipes.repository.RecipeCategoriesRepository;
 import ru.foodmaker.recipes.entity.Recipe;
 import ru.foodmaker.recipes.exception.EntityException;
 
@@ -19,6 +22,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import ru.foodmaker.recipes.mapper.RecipeMapper;
 import ru.foodmaker.recipes.service.RecipesService;
@@ -27,14 +31,19 @@ import ru.foodmaker.recipes.service.RecipesService;
 public class RecipesServiceImpl implements RecipesService {
 
     private final RecipesRepository recipesRepository;
+
+    private final RecipeCategoriesRepository recipeСategoriesRepository;
+
     private final RecipeMapper mapper;
 
 
     @Autowired
     public RecipesServiceImpl(RecipesRepository recipesRepository,
+                              RecipeCategoriesRepository recipeСategoriesRepository,
                               RecipeMapper mapper
                               ) {
 
+        this.recipeСategoriesRepository=recipeСategoriesRepository;
         this.recipesRepository = recipesRepository;
         this.mapper = mapper;
 
@@ -69,6 +78,15 @@ public class RecipesServiceImpl implements RecipesService {
         }
         newRecipe.setSteps(preparationStepsList);
 
+        List<RecipeCategories> recipeCategoriesList = new ArrayList<>();
+        for (RecipeCategoriesDto recipeCategoriesDto : recipeDto.getCategories()) {
+            RecipeCategories recipeCategories = new RecipeCategories();
+            recipeCategories.setRecipeId(newRecipe.getRecipeId());
+            recipeCategories.setCategoryId(recipeCategoriesDto.getCategoryId());
+            recipeCategoriesList.add(recipeCategories);
+        }
+        newRecipe.setCategories(recipeCategoriesList);
+
         Recipe savedRecipe=this.recipesRepository.save(recipe);
         newRecipeDto = this.mapper.toRecipeDto(savedRecipe);
 
@@ -87,6 +105,29 @@ public class RecipesServiceImpl implements RecipesService {
     }
 
     @Override
+    @Transactional
+    public List<RecipeDto> findRecipesByCategoryId(Integer categoryId) {
+                List<Integer> recipeIds = recipeСategoriesRepository
+                .findByCategoryId(categoryId)
+                .map(RecipeCategories::getRecipeId)
+                .collect(Collectors.toList());
+
+        return recipesRepository
+                .findByRecipeIdIn(recipeIds)
+                .map(this.mapper::toRecipeDto)
+                .collect(Collectors.toList());
+    }
+
+    /* private RecipeDto convertToRecipeDto(Recipe recipe) {
+        RecipeDto dto = new RecipeDto();
+        dto.setRecipeId(recipe.getRecipeId());
+        dto.setRecipeTitle(recipe.getRecipeTitle());
+
+        return dto;
+    }*/
+
+
+    @Override
     public RecipeDto getRecipe(Integer id) {
 
         Optional<Recipe> optionalObjectType = this.recipesRepository.findById(id);
@@ -98,6 +139,8 @@ public class RecipesServiceImpl implements RecipesService {
             throw new EntityException(String.format("Recipe with code %s not exists", id));
         }
     }
+
+
 
     @Override
     @Transactional

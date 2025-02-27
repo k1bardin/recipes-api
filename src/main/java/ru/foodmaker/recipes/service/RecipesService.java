@@ -11,6 +11,8 @@ public interface RecipesService {
     List<RecipeDto> getAllRecipes();
     RecipeDto updateRecipe(RecipeDto recipeDto);
 
+    public List<RecipeDto> findRecipesByCategoryId(Integer categoryId);
+
     RecipeDto getRecipe(Integer id);
     void deleteRecipe(Integer id);
 }

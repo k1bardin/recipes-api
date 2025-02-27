@@ -46,4 +46,11 @@ public class RecipesController {
 
         return this.recipesService.updateRecipe(recipeDto);
     }
+
+    @GetMapping("/recipes/findByCategory/{categoryId}")
+    public List<RecipeDto> getRecipesByCategory(@PathVariable Integer categoryId) {
+        return recipesService.findRecipesByCategoryId(categoryId);
+    }
+
+
 }
