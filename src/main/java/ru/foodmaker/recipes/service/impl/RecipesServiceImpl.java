@@ -7,12 +7,10 @@ import ru.foodmaker.recipes.dto.PreparationStepsDto;
 import ru.foodmaker.recipes.dto.RecipeCategoriesDto;
 import ru.foodmaker.recipes.dto.RecipeDto;
 import ru.foodmaker.recipes.dto.RecipeIngredientsDto;
-import ru.foodmaker.recipes.entity.PreparationSteps;
-import ru.foodmaker.recipes.entity.RecipeCategories;
-import ru.foodmaker.recipes.entity.RecipeIngredients;
+import ru.foodmaker.recipes.entity.*;
+import ru.foodmaker.recipes.repository.IngredientsRepository;
 import ru.foodmaker.recipes.repository.RecipesRepository;
 import ru.foodmaker.recipes.repository.RecipeCategoriesRepository;
-import ru.foodmaker.recipes.entity.Recipe;
 import ru.foodmaker.recipes.exception.EntityException;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +20,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import ru.foodmaker.recipes.mapper.RecipeMapper;
 import ru.foodmaker.recipes.service.RecipesService;
@@ -34,16 +31,20 @@ public class RecipesServiceImpl implements RecipesService {
 
     private final RecipeCategoriesRepository recipeСategoriesRepository;
 
+    private final IngredientsRepository ingredientsRepository;
+
     private final RecipeMapper mapper;
 
 
     @Autowired
     public RecipesServiceImpl(RecipesRepository recipesRepository,
                               RecipeCategoriesRepository recipeСategoriesRepository,
+                              IngredientsRepository ingredientsRepository,
                               RecipeMapper mapper
                               ) {
 
         this.recipeСategoriesRepository=recipeСategoriesRepository;
+        this.ingredientsRepository=ingredientsRepository;
         this.recipesRepository = recipesRepository;
         this.mapper = mapper;
 
@@ -118,23 +119,33 @@ public class RecipesServiceImpl implements RecipesService {
                 .collect(Collectors.toList());
     }
 
-    /* private RecipeDto convertToRecipeDto(Recipe recipe) {
-        RecipeDto dto = new RecipeDto();
-        dto.setRecipeId(recipe.getRecipeId());
-        dto.setRecipeTitle(recipe.getRecipeTitle());
-
-        return dto;
-    }*/
 
 
     @Override
     public RecipeDto getRecipe(Integer id) {
+        Optional<Recipe> optionalRecipe = this.recipesRepository.findById(id);
 
-        Optional<Recipe> optionalObjectType = this.recipesRepository.findById(id);
-        if (optionalObjectType.isPresent()) {
-            Recipe recipe = optionalObjectType.get();
-            return this.mapper.toRecipeDto(recipe);
+        if (optionalRecipe.isPresent()) {
+            Recipe recipe = optionalRecipe.get();
+            RecipeDto recipeDto = this.mapper.toRecipeDto(recipe);
 
+            // Получаем список ингредиентов из RecipeDto
+            List<RecipeIngredientsDto> ingredients = recipeDto.getIngredients();
+
+            // Обновляем названия ингредиентов
+            ingredients.forEach(ingredient -> {
+                Optional<Ingredient> optionalIngredient =
+                        this.ingredientsRepository.findById(ingredient.getIngredientId());
+
+                if (optionalIngredient.isPresent()) {
+                    ingredient.setIngredientTitle(optionalIngredient.get().getIngredientTitle());
+                } else {
+                    throw new EntityException(
+                            String.format("Ingredient with id %s not found", ingredient.getIngredientId()));
+                }
+            });
+
+            return recipeDto;
         } else {
             throw new EntityException(String.format("Recipe with code %s not exists", id));
         }
