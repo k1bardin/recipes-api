@@ -3,30 +3,45 @@ package ru.foodmaker.recipes.service.impl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.foodmaker.recipes.dto.CategoryDto;
+import ru.foodmaker.recipes.dto.CountryDto;
+import ru.foodmaker.recipes.dto.HolidayDto;
+import ru.foodmaker.recipes.dto.TypeMealDto;
 import ru.foodmaker.recipes.entity.Category;
 import ru.foodmaker.recipes.exception.EntityException;
 import ru.foodmaker.recipes.mapper.RecipeMapper;
 import ru.foodmaker.recipes.repository.CategoriesRepository;
-import ru.foodmaker.recipes.service.CategoriesService;
-
+import ru.foodmaker.recipes.repository.CountriesRepository;
+import ru.foodmaker.recipes.repository.HolidaysRepository;
+import ru.foodmaker.recipes.repository.TypeMealsRepository;
+import ru.foodmaker.recipes.service.RecipeAttributesService;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 @Service
-public class CategoriesServiceImpl implements CategoriesService {
-
+public class RecipeAttributesServiceImpl implements RecipeAttributesService {
     private final CategoriesRepository categoriesRepository;
+
+    private final TypeMealsRepository typeMealsRepository;
+
+    private final CountriesRepository countriesRepository;
+
+    private final HolidaysRepository holidaysRepository;
     private final RecipeMapper mapper;
 
-    public CategoriesServiceImpl(CategoriesRepository categoriesRepository,
+    public RecipeAttributesServiceImpl(CategoriesRepository categoriesRepository,
+                                       TypeMealsRepository typeMealsRepository,
+                                       CountriesRepository countriesRepository,
+                                       HolidaysRepository holidaysRepository,
+
                                  RecipeMapper mapper) {
         this.categoriesRepository = categoriesRepository;
+        this.typeMealsRepository=typeMealsRepository;
+        this.holidaysRepository=holidaysRepository;
+        this.countriesRepository=countriesRepository;
         this.mapper=mapper;
     }
-
-
     @Override
     @Transactional
     public CategoryDto addCategory(CategoryDto categoryDto) {
@@ -71,5 +86,37 @@ public class CategoriesServiceImpl implements CategoriesService {
         } else {
             throw new EntityException(String.format("Category with categoryId %s not exists", id));
         }
-}
+
+    }
+
+    @Override
+    public List<TypeMealDto> getAllTypeMeals() {
+        return Optional.of(this.typeMealsRepository.findAll())
+                .stream()
+                .flatMap(Collection::stream)
+                .map(this.mapper::toTypeMealDto)
+                .toList();
+
+    }
+
+    @Override
+    public List<CountryDto> getAllCountries() {
+        return Optional.of(this.countriesRepository.findAll())
+                .stream()
+                .flatMap(Collection::stream)
+                .map(this.mapper::toCountryDto)
+                .toList();
+
+    }
+
+    @Override
+    public List<HolidayDto> getAllHolidays() {
+        return Optional.of(this.holidaysRepository.findAll())
+                .stream()
+                .flatMap(Collection::stream)
+                .map(this.mapper::toHolidayDto)
+                .toList();
+
+    }
+
 }
