@@ -16,7 +16,7 @@ public class Category {
     private Integer categoryId;
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<RecipeCategories> recipeCategories;
+    private List<RecipeAttributes> recipeAttributes;
 
     @Column(name="category_name")
     private String categoryName;

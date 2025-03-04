@@ -14,8 +14,8 @@ public class Holiday {
     @Column(name="holday_id")
     private Integer holidayId;
 
-    @OneToMany(mappedBy = "country", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<RecipeHolidays> recipeHolidays;
+    @OneToMany(mappedBy = "holiday", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RecipeAttributes> recipeAttributes;
 
     @Column(name="holiday_name")
     private String holidayName;

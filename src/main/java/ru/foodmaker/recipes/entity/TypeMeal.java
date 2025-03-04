@@ -14,8 +14,8 @@ public class TypeMeal {
     @Column(name="type_meal_id")
     private Integer typeMealId;
 
-    @OneToMany(mappedBy = "country", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<RecipeTypeMeals> recipeTypeMeals;
+    @OneToMany(mappedBy = "typeMeal", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RecipeAttributes> recipeAttributes;
 
     @Column(name="type_meal_name")
     private String typeMealName;

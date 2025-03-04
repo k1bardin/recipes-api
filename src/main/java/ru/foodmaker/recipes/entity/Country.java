@@ -16,7 +16,7 @@ public class Country {
     private Integer countryId;
 
     @OneToMany(mappedBy = "country", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<RecipeCountries> recipeCountries;
+    private List<RecipeAttributes> recipeAttributes;
 
     @Column(name="country_name")
     private String countryName;

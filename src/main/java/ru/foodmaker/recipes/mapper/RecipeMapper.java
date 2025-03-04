@@ -26,9 +26,6 @@ public interface RecipeMapper {
 
     CategoryDto toCategoryDto (Category category);
 
-    RecipeCategories toRecipeCategories (RecipeCategoriesDto recipeCategoriesDto);
-
-    RecipeCategoriesDto toRecipeCategoriesDto (RecipeCategories recipeCategories);
 
     Country toCountry (CountryDto countryDto);
 
@@ -42,17 +39,10 @@ public interface RecipeMapper {
 
     TypeMealDto toTypeMealDto (TypeMeal typeMeal);
 
-    RecipeTypeMeals toRecipeTypeMeals (RecipeTypeMealsDto recipeTypeMealsDto);
+    RecipeAttributes toRecipeAttributes (RecipeAttributesDto recipeAttributesDto);
 
-    RecipeTypeMealsDto toRecipeTypeMealsDto (RecipeTypeMeals recipeTypeMeals);
+    RecipeAttributesDto toRecipeAttributesDto (RecipeAttributes recipeAttributes);
 
-    RecipeHolidays toRecipeHolidays (RecipeHolidaysDto recipeHolidaysDto);
-
-    RecipeHolidaysDto toRecipeHolidaysDto (RecipeHolidays recipeHolidays);
-
-    RecipeCountries toRecipeCountries  (RecipeCountriesDto recipeCountriesDto);
-
-    RecipeCountriesDto toRecipeCountriesDto (RecipeCountries recipeCountries);
 
 
 }

@@ -41,17 +41,10 @@ public class Recipe {
     @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL)
     private List<RecipeIngredients> ingredients;
 
-    @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL)
-    private List<RecipeCategories> categories;
 
     @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL)
-    private List<RecipeHolidays> holidays;
+    private List<RecipeAttributes> attributes;
 
-    @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL)
-    private List<RecipeCountries> countries;
-
-    @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL)
-    private List<RecipeTypeMeals> typeMeals;
 
     @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL)
     private List<PreparationSteps> steps;
