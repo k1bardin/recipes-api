@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>ru.foodmaker</groupId>
-    <artifactId>receipes</artifactId>
+    <artifactId>recipes</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>recipes-api</name>
     <description>recipes-api</description>

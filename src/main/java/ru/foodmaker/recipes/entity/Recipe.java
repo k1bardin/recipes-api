@@ -45,10 +45,22 @@ public class Recipe {
     private List<RecipeCategories> categories;
 
     @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL)
+    private List<RecipeHolidays> holidays;
+
+    @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL)
+    private List<RecipeCountries> countries;
+
+    @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL)
+    private List<RecipeTypeMeals> typeMeals;
+
+    @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL)
     private List<PreparationSteps> steps;
 
     @Column(name="image_link")
     private String imageLink;
+
+    @Column(name="image_link_preview")
+    private String imageLinkPreview;
 
     @Column(name="author_id")
     private Integer authorId;
