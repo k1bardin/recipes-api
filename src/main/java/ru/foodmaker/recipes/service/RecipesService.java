@@ -1,5 +1,6 @@
 package ru.foodmaker.recipes.service;
 
+import ru.foodmaker.recipes.dto.FindRecipesRequest;
 import ru.foodmaker.recipes.dto.RecipeDto;
 
 
@@ -11,7 +12,8 @@ public interface RecipesService {
     List<RecipeDto> getAllRecipes();
     RecipeDto updateRecipe(RecipeDto recipeDto);
 
-    public List<RecipeDto> findRecipesByCategoryId(Integer categoryId);
+    List<RecipeDto> findRecipesByCategoryId(Integer categoryId);
+    List<RecipeDto> findRecipesByFilter(FindRecipesRequest findRecipesRequest);
 
     RecipeDto getRecipe(Integer id);
     void deleteRecipe(Integer id);

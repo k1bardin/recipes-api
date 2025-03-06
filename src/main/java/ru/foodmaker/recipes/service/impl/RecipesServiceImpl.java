@@ -1,6 +1,8 @@
 package ru.foodmaker.recipes.service.impl;
 
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import ru.foodmaker.recipes.dto.*;
@@ -10,11 +12,10 @@ import ru.foodmaker.recipes.exception.EntityException;
 
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import ru.foodmaker.recipes.mapper.RecipeMapper;
 import ru.foodmaker.recipes.service.RecipesService;
@@ -25,6 +26,8 @@ public class RecipesServiceImpl implements RecipesService {
     private final RecipesRepository recipesRepository;
 
     private final RecipeAttributesRepository recipeAttributesRepository;
+
+    private final RecipeIngredientsRepository recipeIngredientsRepository;
 
     private final IngredientsRepository ingredientsRepository;
 
@@ -46,6 +49,7 @@ public class RecipesServiceImpl implements RecipesService {
                               TypeMealsRepository typeMealsRepository,
                               CountriesRepository countriesRepository,
                               HolidaysRepository holidaysRepository,
+                              RecipeIngredientsRepository recipeIngredientsRepository,
                               RecipeMapper mapper
                               ) {
 
@@ -56,6 +60,7 @@ public class RecipesServiceImpl implements RecipesService {
         this.countriesRepository=countriesRepository;
         this.typeMealsRepository=typeMealsRepository;
         this.categoriesRepository=categoriesRepository;
+        this.recipeIngredientsRepository=recipeIngredientsRepository;
         this.mapper = mapper;
 
     }
@@ -130,6 +135,91 @@ public class RecipesServiceImpl implements RecipesService {
                 .findByRecipeIdIn(recipeIds)
                 .map(this.mapper::toRecipeDto)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public List<RecipeDto> findRecipesByFilter(FindRecipesRequest findRecipesRequest) {
+        Integer countryId = findRecipesRequest.getCountryId();
+        Integer categoryId = findRecipesRequest.getCategoryId();
+        Integer holidayId = findRecipesRequest.getHolidayId();
+        Integer typeMealId = findRecipesRequest.getTypeMealId();
+
+        if (countryId == null && categoryId == null && holidayId == null && typeMealId == null
+                && (findRecipesRequest.getIngredients() == null || findRecipesRequest.getIngredients().isEmpty())) {
+            return recipesRepository.findAll().stream()
+                    .map(this.mapper::toRecipeDto)
+                    .collect(Collectors.toList());
+        }
+
+        Specification<RecipeAttributes> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (categoryId != null) {
+                predicates.add(cb.equal(root.get("categoryId"), categoryId));
+            }
+            if (countryId != null) {
+                predicates.add(cb.equal(root.get("countryId"), countryId));
+            }
+            if (holidayId != null) {
+                predicates.add(cb.equal(root.get("holidayId"), holidayId));
+            }
+            if (typeMealId != null) {
+                predicates.add(cb.equal(root.get("typeMealId"), typeMealId));
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        List<RecipeAttributes> recipeAttributes = recipeAttributesRepository
+                .findAll(spec);
+
+        List<Integer> recipeIds = recipeAttributes.stream()
+                .map(RecipeAttributes::getRecipeId)
+                .collect(Collectors.toList());
+        if (findRecipesRequest.getIngredients() != null && !findRecipesRequest.getIngredients().isEmpty()){
+
+            List<Integer> ingredientIds = Optional.ofNullable(findRecipesRequest.getIngredients())
+                    .stream()
+                    .flatMap(List::stream) // Добавляем flatMap для работы с элементами списка
+                    .map(ingredient -> ingredient.getIngredientId())
+                    .filter(Objects::nonNull)
+                    .distinct()
+                    .collect(Collectors.toList());
+
+
+            Stream<RecipeIngredients> recipeIngredients = recipeIngredientsRepository
+                    .findByIngredientIdIn(ingredientIds);
+
+            recipeIngredients = recipeIngredients
+                    .filter(ri -> ri.getRecipeId() != null && ri.getIngredientId() != null);
+
+            Map<Integer, Set<Integer>> recipeToIngredients = recipeIngredients
+                    .filter(ri -> recipeIds.contains(ri.getRecipeId()) && ri.getIngredientId() != null)
+                    .collect(Collectors.groupingBy(
+                            RecipeIngredients::getRecipeId,
+                            Collectors.mapping(RecipeIngredients::getIngredientId, Collectors.toSet())
+                    ));
+
+            Set<Integer> requiredIngredientIds = new HashSet<>(ingredientIds);
+
+            List<Integer> filteredRecipeIds = recipeToIngredients.entrySet().stream()
+                    .filter(entry -> requiredIngredientIds.stream()
+                            .allMatch(requiredId -> entry.getValue().contains(requiredId)))
+                    .map(Map.Entry::getKey)
+                    .collect(Collectors.toList());
+
+            return recipesRepository
+                    .findByRecipeIdIn(filteredRecipeIds)
+                    .map(this.mapper::toRecipeDto)
+                    .collect(Collectors.toList());
+        }else {
+
+            return recipesRepository
+                    .findByRecipeIdIn(recipeIds)
+                    .map(this.mapper::toRecipeDto)
+                    .collect(Collectors.toList());
+        }
     }
 
 
