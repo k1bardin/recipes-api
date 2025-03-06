@@ -1,5 +1,6 @@
 package ru.foodmaker.recipes.service.impl;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
@@ -36,6 +37,9 @@ public class RecipesServiceImpl implements RecipesService {
     private final CountriesRepository countriesRepository;
 
     private final HolidaysRepository holidaysRepository;
+
+    private final PreparationStepsRepository preparationStepsRepository;
+
     private final CategoriesRepository categoriesRepository;
 
     private final RecipeMapper mapper;
@@ -45,6 +49,7 @@ public class RecipesServiceImpl implements RecipesService {
     public RecipesServiceImpl(RecipesRepository recipesRepository,
                               RecipeAttributesRepository recipeAttributesRepository,
                               IngredientsRepository ingredientsRepository,
+                              PreparationStepsRepository preparationStepsRepository,
                               CategoriesRepository categoriesRepository,
                               TypeMealsRepository typeMealsRepository,
                               CountriesRepository countriesRepository,
@@ -61,6 +66,7 @@ public class RecipesServiceImpl implements RecipesService {
         this.typeMealsRepository=typeMealsRepository;
         this.categoriesRepository=categoriesRepository;
         this.recipeIngredientsRepository=recipeIngredientsRepository;
+        this.preparationStepsRepository = preparationStepsRepository;
         this.mapper = mapper;
 
     }
@@ -285,26 +291,73 @@ public class RecipesServiceImpl implements RecipesService {
     @Transactional
     public RecipeDto updateRecipe(RecipeDto recipeDto) {
 
-       Recipe recipe = this.recipesRepository.findById(recipeDto.getRecipeId()).orElseThrow(() -> new EntityException(String.format("Recipe with code %s not exists", recipeDto.getRecipeId())));
-        recipe.setRecipeTitle(recipeDto.getRecipeTitle());
-        recipe.setTime(recipeDto.getTime());
-        recipe.setImageLink(recipeDto.getImageLink());
+        Recipe existingRecipe = recipesRepository.findById(recipeDto.getRecipeId())
+                .orElseThrow(() -> new EntityNotFoundException("Recipe not found"));
 
-        List<RecipeIngredients> updatedIngredients = recipeDto.getIngredients().stream()
-                .map(ingredientDto -> {
-                    RecipeIngredients recipeIngredients = new RecipeIngredients();
-                    recipeIngredients.setRecipeId(recipe.getRecipeId());
-                    recipeIngredients.setQuantity(ingredientDto.getQuantity());
-                    recipeIngredients.setIngredientId(ingredientDto.getIngredientId());
+        // Обновляем только те поля, которые переданы в запросе
+        if (recipeDto.getRecipeTitle() != null) {
+            existingRecipe.setRecipeTitle(recipeDto.getRecipeTitle());
+        }
+        if (recipeDto.getTime() != null) {
+            existingRecipe.setTime(recipeDto.getTime());
+        }
+        if (recipeDto.getImageLink() != null) {
+            existingRecipe.setImageLink(recipeDto.getImageLink());
+        }
+        if (recipeDto.getImageLinkPreview() != null) {
+            existingRecipe.setImageLinkPreview(recipeDto.getImageLinkPreview());
+        }
 
-                    return recipeIngredients;
-                })
-                .collect(Collectors.toList());
+        // Обновляем связанные сущности только если они переданы в запросе
+        if (recipeDto.getIngredients() != null) {
+            // Удаляем старые ингредиенты и создаем новые
+            recipeIngredientsRepository.deleteAllByRecipeId(recipeDto.getRecipeId());
+            List<RecipeIngredients> ingredientList = new ArrayList<>();
+            for (RecipeIngredientsDto recipeIngredientsDto : recipeDto.getIngredients()) {
+                RecipeIngredients ingredient = new RecipeIngredients();
+                ingredient.setRecipeId(recipeDto.getRecipeId());
+                ingredient.setQuantity(recipeIngredientsDto.getQuantity());
+                ingredient.setIngredientId(recipeIngredientsDto.getIngredientId());
+                ingredientList.add(ingredient);
+            }
+            existingRecipe.setIngredients(ingredientList);
+        }
 
-        recipe.setIngredients(updatedIngredients);
-        Recipe newRecipe = this.recipesRepository.save(recipe);
+        if (recipeDto.getSteps() != null) {
+            // Удаляем старые шаги приготовления и создаем новые
+            preparationStepsRepository.deleteAllByRecipeId(recipeDto.getRecipeId());
+            List<PreparationSteps> preparationStepsList = new ArrayList<>();
+            for (PreparationStepsDto preparationStepsDto : recipeDto.getSteps()) {
+                PreparationSteps preparationSteps = new PreparationSteps();
+                preparationSteps.setRecipeId(recipeDto.getRecipeId());
+                preparationSteps.setStepNumber(preparationStepsDto.getStepNumber());
+                preparationSteps.setStepDescription(preparationStepsDto.getStepDescription());
+                preparationStepsList.add(preparationSteps);
+            }
+            existingRecipe.setSteps(preparationStepsList);
+        }
 
-        return this.mapper.toRecipeDto(newRecipe);
+        if (recipeDto.getAttributes() != null) {
+            // Удаляем старые атрибуты и создаем новые
+            recipeAttributesRepository.deleteAllByRecipeId(recipeDto.getRecipeId());
+            List<RecipeAttributes> recipeAttributesList = new ArrayList<>();
+            for (RecipeAttributesDto recipeAttributesDto : recipeDto.getAttributes()) {
+                RecipeAttributes recipeAttributes = new RecipeAttributes();
+                recipeAttributes.setRecipeId(recipeDto.getRecipeId());
+                recipeAttributes.setCategoryId(recipeAttributesDto.getCategoryId());
+                recipeAttributes.setTypeMealId(recipeAttributesDto.getTypeMealId());
+                recipeAttributes.setHolidayId(recipeAttributesDto.getHolidayId());
+                recipeAttributes.setCountryId(recipeAttributesDto.getCountryId());
+                recipeAttributesList.add(recipeAttributes);
+            }
+            existingRecipe.setAttributes(recipeAttributesList);
+        }
+
+        // Сохраняем обновленный рецепт
+        Recipe savedRecipe = recipesRepository.save(existingRecipe);
+        RecipeDto updatedRecipeDto = this.mapper.toRecipeDto(savedRecipe);
+
+        return updatedRecipeDto;
     }
 
     @Override
