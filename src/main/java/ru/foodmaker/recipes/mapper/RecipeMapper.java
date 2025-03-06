@@ -43,6 +43,15 @@ public interface RecipeMapper {
 
     RecipeAttributesDto toRecipeAttributesDto (RecipeAttributes recipeAttributes);
 
+    User toUser (UserDto userDto);
 
+    UserDto toUserDto (User user);
+    UserRecipe toUserRecipe (UserRecipeDto userRecipeDto);
+
+    UserRecipeDto toUserRecipeDto (UserRecipe userRecipe);
+
+    UserFavouriteRecipe toUserFavouriteRecipe (UserRecipeDto userRecipeDto);
+
+    UserRecipeDto toUserRecipeDto (UserFavouriteRecipe userFavouriteRecipe);
 
 }

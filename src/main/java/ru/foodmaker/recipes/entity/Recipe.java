@@ -41,13 +41,17 @@ public class Recipe {
     @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL)
     private List<RecipeIngredients> ingredients;
 
-
     @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL)
     private List<RecipeAttributes> attributes;
 
-
     @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL)
     private List<PreparationSteps> steps;
+
+    @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL)
+    private List<UserFavouriteRecipe> usersFavourite;
+
+    @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL)
+    private List<UserRecipe> users;
 
     @Column(name="image_link")
     private String imageLink;

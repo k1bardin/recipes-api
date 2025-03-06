@@ -11,7 +11,7 @@ import java.util.List;
 public class Holiday {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="holday_id")
+    @Column(name="holiday_id")
     private Integer holidayId;
 
     @OneToMany(mappedBy = "holiday", cascade = CascadeType.ALL, orphanRemoval = true)
