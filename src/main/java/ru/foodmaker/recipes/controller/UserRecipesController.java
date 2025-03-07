@@ -9,6 +9,7 @@ import ru.foodmaker.recipes.service.UserRecipesService;
 
 import java.util.List;
 
+@RestController
 public class UserRecipesController {
 
     private final UserRecipesService userRecipesService;

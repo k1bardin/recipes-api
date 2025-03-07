@@ -242,6 +242,7 @@ public class RecipesServiceImpl implements RecipesService {
 
             // Обновляем названия ингредиентов
             ingredients.forEach(ingredient -> {
+
                 Optional<Ingredient> optionalIngredient =
                         this.ingredientsRepository.findById(ingredient.getIngredientId());
 
