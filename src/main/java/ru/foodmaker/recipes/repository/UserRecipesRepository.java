@@ -14,4 +14,6 @@ public interface UserRecipesRepository extends JpaRepository<UserRecipe, Integer
 
     Stream<UserRecipe> findByUserId(Integer userId);
     Optional<UserRecipe> findByRecipeIdAndUserId(Integer recipeId, Integer userId);
+
+    Stream<UserRecipe> findByRecipeId(Integer recipeId);
 }

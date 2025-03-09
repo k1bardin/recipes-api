@@ -36,6 +36,11 @@ public class UserRecipesController {
         return this.userRecipesService.saveUserRecipe(userRecipe);
     }
 
+    @GetMapping("/user/recipe/{recipeId}")
+    public List<UserRecipeDto> getUsersByRecipe(@PathVariable Integer recipeId) {
+        return userRecipesService.findUsersByRecipeId(recipeId);
+    }
+
     @PostMapping(path = "/user/favouriteRecipe", produces = MediaType.APPLICATION_JSON_VALUE)
     public UserRecipeDto createUserFavouriteRecipe(@RequestBody UserRecipeDto userRecipe) {
 
@@ -53,4 +58,5 @@ public class UserRecipesController {
 
         this.userRecipesService.deleteUserFavouriteRecipe(userRecipe);
     }
+
 }

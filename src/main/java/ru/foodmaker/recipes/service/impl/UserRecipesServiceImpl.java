@@ -119,4 +119,12 @@ public class UserRecipesServiceImpl implements UserRecipesService {
                     "Связь между пользователем и рецептом не найдена");
         }
     }
+
+    @Override
+    @Transactional
+    public List<UserRecipeDto> findUsersByRecipeId(Integer recipeId) {
+        return userRecipesRepository.findByRecipeId(recipeId)
+                .map(mapper::toUserRecipeDto)
+                .collect(Collectors.toList());
+    }
 }

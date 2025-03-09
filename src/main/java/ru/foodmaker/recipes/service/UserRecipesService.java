@@ -17,4 +17,6 @@ public interface UserRecipesService {
     void deleteUserRecipe(UserRecipeDto userRecipeDto);
 
     void deleteUserFavouriteRecipe(UserRecipeDto userRecipeDto);
+
+    List<UserRecipeDto> findUsersByRecipeId(Integer recipeId);
 }
