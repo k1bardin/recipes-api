@@ -231,53 +231,74 @@ public class RecipesServiceImpl implements RecipesService {
 
     @Override
     public RecipeDto getRecipe(Integer id) {
+        if (id == null) {
+            throw new IllegalArgumentException("The given id must not be null");
+        }
+
         Optional<Recipe> optionalRecipe = this.recipesRepository.findById(id);
 
         if (optionalRecipe.isPresent()) {
             Recipe recipe = optionalRecipe.get();
             RecipeDto recipeDto = this.mapper.toRecipeDto(recipe);
 
-            // Получаем список ингредиентов из RecipeDto
+            // Получаем список ингредиентов из RecipeDto и проверяем на null
             List<RecipeIngredientsDto> ingredients = recipeDto.getIngredients();
+            if (ingredients == null) {
+                ingredients = new ArrayList<>();
+            }
 
             // Обновляем названия ингредиентов
             ingredients.forEach(ingredient -> {
+                if (ingredient.getIngredientId() != null) {
+                    Optional<Ingredient> optionalIngredient =
+                            this.ingredientsRepository.findById(ingredient.getIngredientId());
 
-                Optional<Ingredient> optionalIngredient =
-                        this.ingredientsRepository.findById(ingredient.getIngredientId());
-
-                if (optionalIngredient.isPresent()) {
-                    ingredient.setIngredientTitle(optionalIngredient.get().getIngredientTitle());
-                } else {
-                    throw new EntityException(
-                            String.format("Ingredient with id %s not found", ingredient.getIngredientId()));
+                    if (optionalIngredient.isPresent()) {
+                        ingredient.setIngredientTitle(optionalIngredient.get().getIngredientTitle());
+                    }
+                }
+                // Если ingredientId null, заменяем объект на null
+                else {
+                    ingredient = null;
                 }
             });
 
+            // Аналогично проверяем attributes
             List<RecipeAttributesDto> attributes = recipeDto.getAttributes();
+            if (attributes == null) {
+                attributes = new ArrayList<>();
+            }
 
             attributes.forEach(attribute -> {
-                Optional<Category> optionalCategory =
-                        this.categoriesRepository.findById(attribute.getCategoryId());
-                attribute.setCategoryName(optionalCategory.get().getCategoryName());
+                if (attribute.getCategoryId() != null) {
+                    Optional<Category> optionalCategory =
+                            this.categoriesRepository.findById(attribute.getCategoryId());
+                    attribute.setCategoryName(optionalCategory.get().getCategoryName());
+                }
             });
 
             attributes.forEach(attribute -> {
-                Optional<TypeMeal> optionalTypeMeal =
-                        this.typeMealsRepository.findById(attribute.getTypeMealId());
-                attribute.setTypeMealName(optionalTypeMeal.get().getTypeMealName());
+                if (attribute.getTypeMealId() != null) {
+                    Optional<TypeMeal> optionalTypeMeal =
+                            this.typeMealsRepository.findById(attribute.getTypeMealId());
+                    attribute.setTypeMealName(optionalTypeMeal.get().getTypeMealName());
+                }
             });
 
             attributes.forEach(attribute -> {
-                Optional<Country> optionalCountry =
-                        this.countriesRepository.findById(attribute.getCountryId());
-                attribute.setCountryName(optionalCountry.get().getCountryName());
+                if (attribute.getCountryId() != null) {
+                    Optional<Country> optionalCountry =
+                            this.countriesRepository.findById(attribute.getCountryId());
+                    attribute.setCountryName(optionalCountry.get().getCountryName());
+                }
             });
 
             attributes.forEach(attribute -> {
-                Optional<Holiday> optionalHoliday =
-                        this.holidaysRepository.findById(attribute.getHolidayId());
-                attribute.setHolidayName(optionalHoliday.get().getHolidayName());
+                if (attribute.getHolidayId() != null) {
+                    Optional<Holiday> optionalHoliday =
+                            this.holidaysRepository.findById(attribute.getHolidayId());
+                    attribute.setHolidayName(optionalHoliday.get().getHolidayName());
+                }
             });
 
             return recipeDto;
@@ -285,7 +306,6 @@ public class RecipesServiceImpl implements RecipesService {
             throw new EntityException(String.format("Recipe with code %s not exists", id));
         }
     }
-
 
 
     @Override
